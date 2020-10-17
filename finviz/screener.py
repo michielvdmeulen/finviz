@@ -309,16 +309,24 @@ class Screener(object):
     def __search_screener(self):
         """ Private function used to return data from the FinViz screener. """
 
-        self._page_content, self._url = http_request_get('https://finviz.com/screener.ashx', payload={
-            'v': self._table,
-            't': ','.join(self._tickers),
-            'f': ','.join(self._filters),
-            'o': self._order,
-            's': self._signal,
-            'c': ','.join(self._custom)
-        })
+        i = 0
+        complete = False
+        while i < 10 and not complete:
+            self._page_content, self._url = http_request_get('https://finviz.com/screener.ashx', payload={
+                'v': self._table,
+                't': ','.join(self._tickers),
+                'f': ','.join(self._filters),
+                'o': self._order,
+                's': self._signal,
+                'c': ','.join(self._custom)
+            })
 
-        self._rows = self.__check_rows()
+            try:
+                self._rows = self.__check_rows()
+                complete = True
+            except Exception as e:
+                i += 1
+
         self.headers = self.__get_table_headers()
         page_urls = scrape.get_page_urls(self._page_content, self._rows, self._url)
 
